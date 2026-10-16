@@ -1,0 +1,1014 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MediGuard – Medicine Expiry and Security Alert System</title>
+  <meta name="description" content="Intelligent pharmacy inventory security, expiry monitoring, and alert dashboard with MongoDB.">
+  
+  <!-- Bootstrap 5.3 CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+  <!-- Bootstrap Icons -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <!-- Custom Modern Healthcare CSS -->
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+
+  <!-- Top Navigation Bar -->
+  <header>
+    <nav class="navbar navbar-expand-lg bg-white border-bottom sticky-top py-2 px-3 shadow-sm">
+      <div class="container-fluid">
+        <!-- Brand -->
+        <a class="navbar-brand text-primary" href="#" onclick="App.showView(Auth.currentAdmin ? 'dashboard' : 'landing'); return false;">
+          <div class="brand-icon-wrapper">
+            <i class="bi bi-shield-plus fs-4"></i>
+          </div>
+          <div>
+            <span class="text-dark">Medi<span class="text-primary">Guard</span></span>
+            <div class="brand-tagline text-muted">Medicine Expiry & Security Alert System</div>
+          </div>
+        </a>
+
+        <!-- Mobile toggler -->
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent" aria-controls="navbarContent" aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <!-- Navbar Content -->
+        <div class="collapse navbar-collapse justify-content-between mt-2 mt-lg-0" id="navbarContent">
+          <!-- Landing Page Navigation Links (visible when in landing view) -->
+          <ul class="navbar-nav mx-auto mb-2 mb-lg-0 fw-semibold small" id="landingNavLinks">
+            <li class="nav-item">
+              <a class="nav-link px-3" href="#landingFeatures">Features</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link px-3" href="#landingHowItWorks">How It Works</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link px-3" href="#landingSecurity">Security Defense</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link px-3" href="#landingDemo">Demo Access</a>
+            </li>
+          </ul>
+
+          <!-- Right-side Action Containers -->
+          <div class="d-flex align-items-center flex-wrap gap-2 ms-auto">
+            <!-- 1. LANDING VIEW NAV ACTIONS (Unauthenticated Landing Page) -->
+            <div id="landingNavActions" class="d-flex align-items-center gap-2">
+              <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill py-2 px-3 d-none d-sm-inline-flex align-items-center gap-1">
+                <i class="bi bi-shield-check"></i> System Active
+              </span>
+              <!-- Prominent Corner Login Button -->
+              <button id="cornerLoginBtn" class="btn btn-primary rounded-pill px-4 py-2 fw-bold shadow-sm d-inline-flex align-items-center gap-2" onclick="App.showView('login')">
+                <i class="bi bi-box-arrow-in-right"></i> Login
+              </button>
+            </div>
+
+            <!-- 2. LOGIN VIEW NAV ACTIONS (When on Login Screen) -->
+            <div id="loginNavActions" class="d-none align-items-center gap-2">
+              <button class="btn btn-outline-secondary btn-sm rounded-pill px-3 py-2 fw-semibold" onclick="App.showView('landing')">
+                <i class="bi bi-arrow-left me-1"></i> Back to Landing Page
+              </button>
+            </div>
+
+            <!-- 3. DASHBOARD VIEW NAV ACTIONS (When on Management Dashboard) -->
+            <div id="dashboardNavActions" class="d-none align-items-center flex-wrap gap-2">
+              <!-- Live Clock -->
+              <div class="d-none d-md-flex align-items-center text-muted small me-1 px-3 py-1 bg-light rounded-pill border">
+                <i class="bi bi-clock me-1 text-primary"></i>
+                <span id="liveClock">Loading time...</span>
+              </div>
+
+              <!-- Admin Status Badge -->
+              <div id="adminBadgeContainer">
+                <!-- Injected via auth.js -->
+              </div>
+
+              <!-- Switch to Landing Page button -->
+              <button class="btn btn-light btn-sm text-secondary border rounded-pill px-3" title="View Public Landing Page" onclick="App.showView('landing')">
+                <i class="bi bi-house-door me-1"></i> Landing Page
+              </button>
+
+              <!-- Logout Button -->
+              <button id="authActionBtn" class="btn btn-outline-danger btn-sm px-3 fw-semibold rounded-pill" onclick="Auth.logout()">
+                <i class="bi bi-box-arrow-right me-1"></i> Logout
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </nav>
+  </header>
+
+  <!-- Main Container -->
+  <main class="flex-grow-1">
+
+    <!-- ========================================================
+         VIEW 1: LANDING PAGE (Default for Unauthenticated Visitors)
+         ======================================================== -->
+    <div id="landingView" class="app-view active">
+      <!-- Hero Section -->
+      <section class="landing-hero">
+        <div class="container-fluid px-3 px-md-5">
+          <div class="row align-items-center g-5">
+            <!-- Hero Left Content -->
+            <div class="col-12 col-lg-7">
+              <div class="hero-pill-badge mb-3">
+                <i class="bi bi-shield-check text-success"></i> 24/7 Intelligent Expiry Defense • MongoDB Powered
+              </div>
+              <h1 class="hero-title mb-3">
+                Never Let Expired Medicines Compromise <span class="text-primary">Patient Safety</span>
+              </h1>
+              <p class="hero-subtitle mb-4">
+                MediGuard is an enterprise pharmacy surveillance system that monitors medication lifecycles, automates 30-day expiry warnings, locks down compromised batches with instant security quarantine alerts, and delivers one-click compliance reports.
+              </p>
+              <div class="d-flex flex-wrap gap-3 align-items-center mb-4">
+                <button class="btn btn-primary btn-lg rounded-pill px-4 py-3 fw-bold shadow-sm d-inline-flex align-items-center gap-2" onclick="App.showView('login')">
+                  <i class="bi bi-shield-lock-fill"></i> Sign In to Admin Portal
+                </button>
+                <a href="#landingFeatures" class="btn btn-outline-secondary btn-lg rounded-pill px-4 py-3 fw-semibold">
+                  <i class="bi bi-arrow-down-circle me-1"></i> Explore Features
+                </a>
+              </div>
+              <div class="d-flex flex-wrap gap-4 text-muted small pt-2 border-top">
+                <div class="d-flex align-items-center gap-1">
+                  <i class="bi bi-check-circle-fill text-success"></i> Role-Protected Write Access
+                </div>
+                <div class="d-flex align-items-center gap-1">
+                  <i class="bi bi-check-circle-fill text-success"></i> Real-Time Date Computation
+                </div>
+                <div class="d-flex align-items-center gap-1">
+                  <i class="bi bi-check-circle-fill text-success"></i> Audit-Ready CSV & Print
+                </div>
+              </div>
+            </div>
+
+            <!-- Hero Right Live Preview Mockup Card -->
+            <div class="col-12 col-lg-5">
+              <div class="hero-preview-card">
+                <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
+                  <div class="d-flex align-items-center gap-2">
+                    <span class="pulse-badge"></span>
+                    <strong class="text-dark small text-uppercase tracking-wider">Live Expiry Defense Center</strong>
+                  </div>
+                  <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill small">Surveillance Active</span>
+                </div>
+
+                <!-- Live dynamic metrics summary -->
+                <div class="row g-2 mb-3">
+                  <div class="col-4">
+                    <div class="p-2 rounded bg-danger-subtle text-center border border-danger-subtle">
+                      <div class="small fw-bold text-danger text-uppercase" style="font-size: 0.72rem;">Quarantined</div>
+                      <div class="fw-bold text-danger fs-5" id="heroStatExpired">...</div>
+                    </div>
+                  </div>
+                  <div class="col-4">
+                    <div class="p-2 rounded bg-warning-subtle text-center border border-warning-subtle">
+                      <div class="small fw-bold text-warning-emphasis text-uppercase" style="font-size: 0.72rem;">Expiring Soon</div>
+                      <div class="fw-bold text-warning-emphasis fs-5" id="heroStatExpiringSoon">...</div>
+                    </div>
+                  </div>
+                  <div class="col-4">
+                    <div class="p-2 rounded bg-success-subtle text-center border border-success-subtle">
+                      <div class="small fw-bold text-success text-uppercase" style="font-size: 0.72rem;">Safe Stock</div>
+                      <div class="fw-bold text-success fs-5" id="heroStatSafe">...</div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Real-time surveillance feed items -->
+                <div class="mb-3">
+                  <div class="preview-threat-item preview-threat-danger">
+                    <div class="d-flex align-items-center gap-2">
+                      <i class="bi bi-shield-x text-danger fs-5"></i>
+                      <div>
+                        <strong>Amoxicillin 500mg</strong>
+                        <div class="small opacity-75">AMX-2023-091 • Shelf A-02</div>
+                      </div>
+                    </div>
+                    <span class="badge bg-danger">EXPIRED</span>
+                  </div>
+
+                  <div class="preview-threat-item preview-threat-warning">
+                    <div class="d-flex align-items-center gap-2">
+                      <i class="bi bi-hourglass-split text-warning fs-5"></i>
+                      <div>
+                        <strong>Azithromycin 250mg</strong>
+                        <div class="small opacity-75">AZI-2024-402 • Shelf B-01</div>
+                      </div>
+                    </div>
+                    <span class="badge bg-warning text-dark">8 DAYS LEFT</span>
+                  </div>
+
+                  <div class="preview-threat-item preview-threat-safe">
+                    <div class="d-flex align-items-center gap-2">
+                      <i class="bi bi-shield-check text-success fs-5"></i>
+                      <div>
+                        <strong>Paracetamol 650mg</strong>
+                        <div class="small opacity-75">PCM-2025-108 • Safe & Ready</div>
+                      </div>
+                    </div>
+                    <span class="badge bg-success">VALID</span>
+                  </div>
+                </div>
+
+                <button class="btn btn-primary w-100 py-2 fw-semibold rounded-pill shadow-sm" onclick="App.showView('login')">
+                  <i class="bi bi-box-arrow-in-right me-1"></i> Sign In to Manage Pharmacy Inventory
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Trust Stats Bar -->
+      <section class="trust-stats-bar">
+        <div class="container-fluid px-3 px-md-5">
+          <div class="row g-3">
+            <div class="col-6 col-md-3">
+              <div class="trust-stat-item">
+                <div class="trust-stat-num" id="heroTrustTotal">100%</div>
+                <div class="trust-stat-label">Automated Surveillance</div>
+              </div>
+            </div>
+            <div class="col-6 col-md-3">
+              <div class="trust-stat-item">
+                <div class="trust-stat-num">30 Days</div>
+                <div class="trust-stat-label">Early Expiry Notice</div>
+              </div>
+            </div>
+            <div class="col-6 col-md-3">
+              <div class="trust-stat-item">
+                <div class="trust-stat-num">0 Sec</div>
+                <div class="trust-stat-label">Quarantine Latency</div>
+              </div>
+            </div>
+            <div class="col-6 col-md-3">
+              <div class="trust-stat-item">
+                <div class="trust-stat-num">Audit-Ready</div>
+                <div class="trust-stat-label">CSV & Print Reports</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Key Features Section -->
+      <section id="landingFeatures" class="py-5">
+        <div class="container-fluid px-3 px-md-5">
+          <div class="text-center max-w-2xl mx-auto mb-5">
+            <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill px-3 py-1 fw-bold small text-uppercase">
+              Core Capabilities
+            </span>
+            <h2 class="fw-bold mt-2 mb-3">Engineered for Zero-Dispensing-Error Compliance</h2>
+            <p class="text-muted mx-auto" style="max-width: 650px;">
+              MediGuard combines proactive algorithmic date checks with rigorous administrator controls to ensure patients never receive degraded or expired medications.
+            </p>
+          </div>
+
+          <div class="row g-4">
+            <!-- Feature 1 -->
+            <div class="col-12 col-md-6 col-xl-3">
+              <div class="feature-card">
+                <div class="feature-icon-box feature-icon-danger">
+                  <i class="bi bi-shield-x"></i>
+                </div>
+                <h5 class="fw-bold mb-2">Automated Expiry Surveillance</h5>
+                <p class="text-muted small mb-0">
+                  Calculates exact days remaining dynamically against the current date, categorizing stocks into Safe, Expiring Soon, and Expired without manual spreadsheet checks.
+                </p>
+              </div>
+            </div>
+
+            <!-- Feature 2 -->
+            <div class="col-12 col-md-6 col-xl-3">
+              <div class="feature-card">
+                <div class="feature-icon-box feature-icon-warning">
+                  <i class="bi bi-exclamation-triangle"></i>
+                </div>
+                <h5 class="fw-bold mb-2">Instant Quarantine Alerts</h5>
+                <p class="text-muted small mb-0">
+                  Critical red warning banners and flashing status badges alert dispensing staff immediately when an item crosses its shelf-life boundary.
+                </p>
+              </div>
+            </div>
+
+            <!-- Feature 3 -->
+            <div class="col-12 col-md-6 col-xl-3">
+              <div class="feature-card">
+                <div class="feature-icon-box feature-icon-primary">
+                  <i class="bi bi-geo-alt"></i>
+                </div>
+                <h5 class="fw-bold mb-2">Batch & Shelf Coordinates</h5>
+                <p class="text-muted small mb-0">
+                  Pinpoints every medicine by batch number, storage location (e.g. Shelf A-02, Cold Storage B), supplier provenance, and manufacturing date.
+                </p>
+              </div>
+            </div>
+
+            <!-- Feature 4 -->
+            <div class="col-12 col-md-6 col-xl-3">
+              <div class="feature-card">
+                <div class="feature-icon-box feature-icon-success">
+                  <i class="bi bi-file-earmark-spreadsheet"></i>
+                </div>
+                <h5 class="fw-bold mb-2">Audit-Ready CSV & Print</h5>
+                <p class="text-muted small mb-0">
+                  Export complete inventory inspection sheets as structured CSV logs or generate printable pharmacy audit sheets formatted for healthcare inspectors.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- How It Works Section -->
+      <section id="landingHowItWorks" class="py-5 bg-white border-top border-bottom">
+        <div class="container-fluid px-3 px-md-5">
+          <div class="text-center mb-5">
+            <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle rounded-pill px-3 py-1 fw-bold small text-uppercase">
+              Operational Workflow
+            </span>
+            <h2 class="fw-bold mt-2">How MediGuard Safeguards Your Pharmacy</h2>
+          </div>
+
+          <div class="row g-4">
+            <div class="col-12 col-md-4">
+              <div class="step-card">
+                <div class="step-number-badge">1</div>
+                <h5 class="fw-bold">Ingest & Register Batch</h5>
+                <p class="text-muted small mb-0">
+                  Log new medicine consignments with batch code, category, storage coordinates, manufacturing date, and expiry date via the Admin portal.
+                </p>
+              </div>
+            </div>
+
+            <div class="col-12 col-md-4">
+              <div class="step-card">
+                <div class="step-number-badge">2</div>
+                <h5 class="fw-bold">Autonomous 24/7 Surveillance</h5>
+                <p class="text-muted small mb-0">
+                  Backend algorithms compute countdowns each day, sorting stock into 30-day early warnings and instant expired quarantine buckets.
+                </p>
+              </div>
+            </div>
+
+            <div class="col-12 col-md-4">
+              <div class="step-card">
+                <div class="step-number-badge">3</div>
+                <h5 class="fw-bold">Action, Quarantine & Audit</h5>
+                <p class="text-muted small mb-0">
+                  Staff isolate flagged drugs, initiate vendor returns or authorized hazardous medical waste disposal, and export signed audit trails.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Security Architecture Section -->
+      <section id="landingSecurity" class="py-5">
+        <div class="container-fluid px-3 px-md-5">
+          <div class="row align-items-center g-4">
+            <div class="col-12 col-lg-6">
+              <span class="badge bg-danger-subtle text-danger border border-danger-subtle rounded-pill px-3 py-1 fw-bold small text-uppercase mb-2">
+                Defense In Depth
+              </span>
+              <h2 class="fw-bold mb-3">Enterprise Grade Security Controls</h2>
+              <p class="text-muted mb-4">
+                Designed to maintain data integrity and regulatory compliance under hospital security standards.
+              </p>
+              <ul class="list-unstyled d-flex flex-column gap-3 mb-0">
+                <li class="d-flex align-items-start gap-3">
+                  <div class="p-2 rounded-circle bg-primary-subtle text-primary">
+                    <i class="bi bi-shield-lock-fill"></i>
+                  </div>
+                  <div>
+                    <strong>Session-Backed Administrator Authentication</strong>
+                    <div class="text-muted small">Only authenticated pharmacists can register, modify, or delete inventory records.</div>
+                  </div>
+                </li>
+                <li class="d-flex align-items-start gap-3">
+                  <div class="p-2 rounded-circle bg-success-subtle text-success">
+                    <i class="bi bi-eye-fill"></i>
+                  </div>
+                  <div>
+                    <strong>Guest Read-Only Protection</strong>
+                    <div class="text-muted small">Public visitors can inspect system readiness, but destructive mutations are strictly gated.</div>
+                  </div>
+                </li>
+                <li class="d-flex align-items-start gap-3">
+                  <div class="p-2 rounded-circle bg-warning-subtle text-warning-emphasis">
+                    <i class="bi bi-database-fill-check"></i>
+                  </div>
+                  <div>
+                    <strong>Strict MongoDB Schema Validation</strong>
+                    <div class="text-muted small">Ensures mandatory batch uniqueness, non-negative quantities, and chronological date integrity.</div>
+                  </div>
+                </li>
+              </ul>
+            </div>
+
+            <div class="col-12 col-lg-6">
+              <!-- Demo Callout Box -->
+              <div id="landingDemo" class="demo-callout-box">
+                <div class="d-flex align-items-center gap-2 mb-3">
+                  <span class="badge bg-warning text-dark fw-bold px-3 py-1 rounded-pill">
+                    <i class="bi bi-key-fill me-1"></i> Evaluation Sandbox
+                  </span>
+                </div>
+                <h3 class="fw-bold mb-2">Ready to Test Admin Controls?</h3>
+                <p class="text-white-50 mb-4">
+                  Log in with preconfigured administrator credentials to experience live medicine management, CSV exports, and expiry quarantining.
+                </p>
+                <div class="p-3 bg-white bg-opacity-10 rounded-3 mb-4 border border-white border-opacity-10">
+                  <div class="small text-white-50 mb-1">Pre-configured Admin Credentials:</div>
+                  <div class="d-flex flex-wrap align-items-center justify-content-between gap-2">
+                    <div>
+                      Username: <code class="text-warning">admin</code> | Password: <code class="text-warning">admin123</code>
+                    </div>
+                  </div>
+                </div>
+                <div class="d-flex flex-wrap gap-2">
+                  <button class="btn btn-warning fw-bold px-4 py-2 rounded-pill shadow-sm text-dark d-inline-flex align-items-center gap-2" onclick="App.showView('login', true)">
+                    <i class="bi bi-box-arrow-in-right"></i> 1-Click Demo Login
+                  </button>
+                  <button class="btn btn-outline-light px-4 py-2 rounded-pill fw-semibold" onclick="App.showView('login')">
+                    Standard Login
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- ========================================================
+         VIEW 2: DEDICATED LOGIN SCREEN
+         ======================================================== -->
+    <div id="loginView" class="app-view">
+      <div class="login-view-wrapper">
+        <div class="login-card-container px-3">
+          <!-- Back to landing button -->
+          <div class="mb-3">
+            <button class="btn btn-link text-decoration-none text-secondary fw-semibold p-0" onclick="App.showView('landing')">
+              <i class="bi bi-arrow-left me-1"></i> Back to Landing Page
+            </button>
+          </div>
+
+          <div class="login-card-elevated">
+            <!-- Header -->
+            <div class="login-header">
+              <div class="login-icon-badge">
+                <i class="bi bi-shield-lock-fill"></i>
+              </div>
+              <h4 class="fw-bold mb-1">MediGuard Security Sign In</h4>
+              <small class="text-white-50">Authorized Pharmacy Administration Access</small>
+            </div>
+
+            <!-- Body -->
+            <div class="p-4 p-md-5">
+              <!-- Demo Credentials Helper Banner -->
+              <div class="alert alert-info py-2 px-3 small d-flex align-items-center justify-content-between mb-4 border-info-subtle">
+                <div>
+                  <strong>Default Admin Credentials:</strong><br>
+                  User: <code>admin</code> | Pass: <code>admin123</code>
+                </div>
+                <button type="button" class="btn btn-sm btn-primary fw-semibold" onclick="Auth.fillDemoCredentials()">
+                  Auto-fill
+                </button>
+              </div>
+
+              <!-- Error Alert Box -->
+              <div id="viewLoginErrorMessage" class="alert alert-danger py-2 px-3 small d-none" role="alert"></div>
+
+              <!-- Standalone Login Form -->
+              <form id="viewLoginForm" novalidate>
+                <div class="mb-3">
+                  <label for="viewLoginUsername" class="form-label">Admin Username</label>
+                  <div class="input-group">
+                    <span class="input-group-text bg-light text-muted"><i class="bi bi-person-fill"></i></span>
+                    <input type="text" class="form-control" id="viewLoginUsername" name="username" placeholder="e.g. admin" autocomplete="username" enterkeyhint="next" required>
+                  </div>
+                </div>
+
+                <div class="mb-4">
+                  <label for="viewLoginPassword" class="form-label">Password</label>
+                  <div class="input-group">
+                    <span class="input-group-text bg-light text-muted"><i class="bi bi-key-fill"></i></span>
+                    <input type="password" class="form-control" id="viewLoginPassword" name="password" placeholder="••••••••" autocomplete="current-password" enterkeyhint="done" required>
+                    <button type="button" class="btn btn-outline-secondary password-toggle-btn" id="togglePasswordBtn" title="Toggle password visibility">
+                      <i class="bi bi-eye"></i>
+                    </button>
+                  </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary w-100 py-2 fw-bold shadow-sm" id="viewLoginSubmitBtn">
+                  <i class="bi bi-box-arrow-in-right me-1"></i> Sign In to Dashboard
+                </button>
+              </form>
+
+              <div class="text-center mt-4 pt-3 border-top">
+                <small class="text-muted d-block mb-2">
+                  <i class="bi bi-shield-check text-success me-1"></i> Protected by Session Authentication
+                </small>
+                <a href="#" onclick="App.showView('landing'); return false;" class="text-decoration-none small text-secondary">
+                  <i class="bi bi-arrow-left me-1"></i> Return to Public Landing Page
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========================================================
+         VIEW 3: PHARMACY MANAGEMENT DASHBOARD
+         ======================================================== -->
+    <div id="dashboardView" class="app-view">
+      <div class="container-fluid px-3 px-md-4 py-4">
+        <!-- Printable Header (Visible only when printing) -->
+        <div class="print-header">
+          <h2 class="fw-bold">MediGuard – Pharmacy Inventory & Expiry Audit Report</h2>
+          <p class="text-muted">Generated on: <span id="printDate"></span> | Database: MongoDB</p>
+          <hr>
+        </div>
+
+        <!-- Security & Expiry Alert Banner (Dynamic) -->
+        <section id="securityAlertBanner" class="security-alert-box alert-danger-urgent mb-4 d-none" aria-live="polite">
+          <!-- Injected via app.js -->
+        </section>
+
+        <!-- Top Dashboard Statistics Cards -->
+        <section class="row g-3 mb-4" aria-label="Inventory Statistics Overview">
+          <!-- Total Medicines -->
+          <div class="col-12 col-sm-6 col-xl-3">
+            <div class="stat-card stat-total" data-filter="ALL" title="Click to view all medicines">
+              <div class="d-flex justify-content-between align-items-start">
+                <div>
+                  <div class="text-muted small fw-semibold text-uppercase tracking-wider">Total Medicines</div>
+                  <div class="stat-val text-dark mt-1" id="statTotal">0</div>
+                  <div class="small text-muted mt-1"><i class="bi bi-database me-1"></i>In Active Database</div>
+                </div>
+                <div class="stat-icon">
+                  <i class="bi bi-capsule"></i>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Expired Medicines -->
+          <div class="col-12 col-sm-6 col-xl-3">
+            <div class="stat-card stat-expired" data-filter="EXPIRED" title="Click to filter expired medicines">
+              <div class="d-flex justify-content-between align-items-start">
+                <div>
+                  <div class="text-danger small fw-bold text-uppercase tracking-wider d-flex align-items-center">
+                    <span class="pulse-badge"></span> Expired Drugs
+                  </div>
+                  <div class="stat-val text-danger mt-1" id="statExpired">0</div>
+                  <div class="small text-danger fw-semibold mt-1"><i class="bi bi-exclamation-octagon me-1"></i>Security Action Required</div>
+                </div>
+                <div class="stat-icon">
+                  <i class="bi bi-shield-x"></i>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Expiring Soon -->
+          <div class="col-12 col-sm-6 col-xl-3">
+            <div class="stat-card stat-warning" data-filter="EXPIRING_SOON" title="Click to filter medicines expiring in 30 days">
+              <div class="d-flex justify-content-between align-items-start">
+                <div>
+                  <div class="text-warning-emphasis small fw-bold text-uppercase tracking-wider">Expiring Soon</div>
+                  <div class="stat-val text-warning-emphasis mt-1" id="statExpiringSoon">0</div>
+                  <div class="small text-warning-emphasis fw-semibold mt-1"><i class="bi bi-hourglass-split me-1"></i>Within Next 30 Days</div>
+                </div>
+                <div class="stat-icon">
+                  <i class="bi bi-clock-history"></i>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Safe Stock -->
+          <div class="col-12 col-sm-6 col-xl-3">
+            <div class="stat-card stat-success" data-filter="SAFE" title="Click to filter safe & valid medicines">
+              <div class="d-flex justify-content-between align-items-start">
+                <div>
+                  <div class="text-success small fw-bold text-uppercase tracking-wider">Safe & Valid Stock</div>
+                  <div class="stat-val text-success mt-1" id="statSafe">0</div>
+                  <div class="small text-success fw-semibold mt-1"><i class="bi bi-check2-circle me-1"></i>Good Usable Standing</div>
+                </div>
+                <div class="stat-icon">
+                  <i class="bi bi-shield-check"></i>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Inventory Section -->
+        <section id="inventorySection" class="inventory-card p-3 p-md-4">
+          <!-- Toolbar & Filters -->
+          <div class="d-flex flex-column flex-lg-row align-items-lg-center justify-content-between gap-3 mb-3 pb-3 border-bottom" id="searchFilterBar">
+            
+            <!-- Filter Tabs / Pills -->
+            <div class="filter-btn-group d-flex flex-wrap gap-2">
+              <button class="btn btn-outline-secondary filter-btn active" data-filter="ALL">
+                All Stock <span class="badge bg-secondary ms-1" id="badgeCountAll">0</span>
+              </button>
+              <button class="btn btn-outline-danger filter-btn" data-filter="EXPIRED">
+                <i class="bi bi-exclamation-octagon me-1"></i> Expired <span class="badge bg-danger ms-1" id="badgeCountExpired">0</span>
+              </button>
+              <button class="btn btn-outline-warning text-dark filter-btn" data-filter="EXPIRING_SOON">
+                <i class="bi bi-clock-history me-1"></i> Expiring Soon <span class="badge bg-warning text-dark ms-1" id="badgeCountExpiringSoon">0</span>
+              </button>
+              <button class="btn btn-outline-success filter-btn" data-filter="SAFE">
+                <i class="bi bi-check-circle me-1"></i> Safe <span class="badge bg-success ms-1" id="badgeCountSafe">0</span>
+              </button>
+              <button class="btn btn-outline-dark filter-btn" data-filter="LOW_STOCK">
+                <i class="bi bi-box-seam me-1"></i> Low Stock (&le;10)
+              </button>
+            </div>
+
+            <!-- Search & Action Buttons -->
+            <div class="d-flex flex-wrap align-items-center gap-2">
+              <!-- Search box -->
+              <div class="input-group" style="min-width: 240px; max-width: 320px;">
+                <span class="input-group-text bg-light border-end-0 text-muted">
+                  <i class="bi bi-search"></i>
+                </span>
+                <input type="text" id="searchInput" class="form-control border-start-0 ps-0" placeholder="Search medicine, batch, shelf...">
+              </div>
+
+              <!-- Add Medicine Button (Admin only) -->
+              <button class="btn btn-primary fw-bold shadow-sm d-inline-flex align-items-center gap-1 admin-only" data-bs-toggle="modal" data-bs-target="#addMedicineModal">
+                <i class="bi bi-plus-circle-fill"></i> Add Medicine
+              </button>
+
+              <!-- Export CSV -->
+              <button class="btn btn-outline-secondary" title="Export inventory as CSV audit report" onclick="App.exportCSV()">
+                <i class="bi bi-download"></i> CSV
+              </button>
+
+              <!-- Print Report -->
+              <button class="btn btn-outline-secondary" title="Print pharmacy audit sheet" onclick="App.printReport()">
+                <i class="bi bi-printer"></i>
+              </button>
+
+              <!-- Refresh Data -->
+              <button class="btn btn-outline-secondary" title="Refresh inventory" onclick="App.loadMedicines(); App.loadStats(); App.loadAlerts();">
+                <i class="bi bi-arrow-clockwise"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- Table Header Status Bar -->
+          <div class="d-flex justify-content-between align-items-center mb-2 px-1">
+            <span class="text-muted small fw-semibold" id="tableCountBadge">Loading inventory...</span>
+            <span class="badge bg-light text-secondary border small">
+              <i class="bi bi-funnel me-1"></i> Filter: <span id="currentFilterLabel" class="text-primary fw-bold">All</span>
+            </span>
+          </div>
+
+          <!-- Responsive Inventory Table -->
+          <div class="table-responsive">
+            <table class="table inventory-table align-middle">
+              <thead>
+                <tr>
+                  <th scope="col" style="min-width: 200px;">Medicine Details</th>
+                  <th scope="col" style="min-width: 130px;">Batch No.</th>
+                  <th scope="col" style="min-width: 90px;">Quantity</th>
+                  <th scope="col" style="min-width: 120px;">Mfg Date</th>
+                  <th scope="col" style="min-width: 150px;">Expiry Date</th>
+                  <th scope="col" style="min-width: 140px;">Security Status</th>
+                  <th scope="col" style="min-width: 120px;" class="text-center">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="medicineTableBody">
+                <!-- Dynamic rows populated via App.renderTable() -->
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Empty State -->
+          <div id="emptyState" class="empty-state d-none">
+            <div class="empty-state-icon">
+              <i class="bi bi-capsule"></i>
+            </div>
+            <h5 class="fw-bold text-dark">No Medicines Found</h5>
+            <p class="text-muted small mb-3">No inventory items matched your active filter or search criteria.</p>
+            <button class="btn btn-sm btn-outline-primary" onclick="document.getElementById('searchInput').value=''; document.querySelector('.filter-btn[data-filter=\'ALL\']').click();">
+              <i class="bi bi-arrow-counterclockwise me-1"></i> Reset Filters
+            </button>
+          </div>
+        </section>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="bg-white border-top py-3 px-4 text-center text-muted small mt-auto">
+    <div class="container-fluid d-flex flex-column flex-md-row justify-content-between align-items-center gap-2">
+      <div>
+        <strong>MediGuard</strong> &copy; 2026 – Medicine Expiry and Security Alert System
+      </div>
+      <div class="d-flex align-items-center gap-3">
+        <span><i class="bi bi-database-check text-success me-1"></i> MongoDB Powered</span>
+        <span><i class="bi bi-shield-check text-primary me-1"></i> Role: Admin Protected</span>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ========================================================
+       MODALS
+       ======================================================== -->
+
+  <!-- 1. Add Medicine Modal -->
+  <div class="modal fade" id="addMedicineModal" tabindex="-1" aria-labelledby="addMedicineModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+      <div class="modal-content">
+        <div class="modal-header bg-primary text-white">
+          <h5 class="modal-title fw-bold" id="addMedicineModalLabel">
+            <i class="bi bi-plus-circle me-1"></i> Add New Medicine
+          </h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <form id="addMedicineForm">
+          <div class="modal-body p-4">
+            <div class="row g-3">
+              <!-- Medicine Name -->
+              <div class="col-12 col-md-7">
+                <label for="addName" class="form-label">Medicine Name <span class="text-danger">*</span></label>
+                <input type="text" class="form-control" id="addName" placeholder="e.g. Amoxicillin 500mg, Paracetamol" required>
+              </div>
+
+              <!-- Batch Number -->
+              <div class="col-12 col-md-5">
+                <label for="addBatchNumber" class="form-label">Batch Number <span class="text-danger">*</span></label>
+                <input type="text" class="form-control font-monospace" id="addBatchNumber" placeholder="e.g. AMX-2026-001" required>
+              </div>
+
+              <!-- Quantity -->
+              <div class="col-12 col-md-4">
+                <label for="addQuantity" class="form-label">Quantity (Units) <span class="text-danger">*</span></label>
+                <input type="number" class="form-control" id="addQuantity" min="0" placeholder="0" required>
+              </div>
+
+              <!-- Category -->
+              <div class="col-12 col-md-4">
+                <label for="addCategory" class="form-label">Category</label>
+                <select class="form-select" id="addCategory">
+                  <option value="General">General</option>
+                  <option value="Antibiotic">Antibiotic</option>
+                  <option value="Analgesic / Pain Relief">Analgesic / Pain Relief</option>
+                  <option value="Antipyretic">Antipyretic</option>
+                  <option value="Antihistamine">Antihistamine</option>
+                  <option value="Cardiovascular">Cardiovascular</option>
+                  <option value="Antidiabetic">Antidiabetic</option>
+                  <option value="Gastrointestinal">Gastrointestinal</option>
+                  <option value="Vaccine / Biological">Vaccine / Biological</option>
+                  <option value="Antiseptic">Antiseptic</option>
+                </select>
+              </div>
+
+              <!-- Storage Location -->
+              <div class="col-12 col-md-4">
+                <label for="addLocation" class="form-label">Storage Location</label>
+                <input type="text" class="form-control" id="addLocation" placeholder="e.g. Shelf A-02, Cold Storage">
+              </div>
+
+              <!-- Manufacturing Date -->
+              <div class="col-12 col-md-6">
+                <label for="addMfgDate" class="form-label">Manufacturing Date <span class="text-danger">*</span></label>
+                <input type="date" class="form-control" id="addMfgDate" required>
+              </div>
+
+              <!-- Expiry Date -->
+              <div class="col-12 col-md-6">
+                <label for="addExpDate" class="form-label">Expiry Date <span class="text-danger">*</span></label>
+                <input type="date" class="form-control" id="addExpDate" required>
+                <div class="form-text text-muted">Must be after manufacturing date.</div>
+              </div>
+
+              <!-- Supplier / Manufacturer -->
+              <div class="col-12">
+                <label for="addSupplier" class="form-label">Supplier / Manufacturer</label>
+                <input type="text" class="form-control" id="addSupplier" placeholder="e.g. Pfizer, Sun Pharma, Cipla">
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer bg-light">
+            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+            <button type="submit" class="btn btn-primary fw-bold" id="addSubmitBtn">
+              <i class="bi bi-plus-circle me-1"></i> Register Medicine
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. Edit Medicine Modal -->
+  <div class="modal fade" id="editMedicineModal" tabindex="-1" aria-labelledby="editMedicineModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+      <div class="modal-content">
+        <div class="modal-header bg-dark text-white">
+          <h5 class="modal-title fw-bold" id="editMedicineModalLabel">
+            <i class="bi bi-pencil-square me-1"></i> Update Medicine Details
+          </h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <form id="editMedicineForm">
+          <input type="hidden" id="editId">
+          <div class="modal-body p-4">
+            <div class="row g-3">
+              <!-- Medicine Name -->
+              <div class="col-12 col-md-7">
+                <label for="editName" class="form-label">Medicine Name <span class="text-danger">*</span></label>
+                <input type="text" class="form-control" id="editName" required>
+              </div>
+
+              <!-- Batch Number -->
+              <div class="col-12 col-md-5">
+                <label for="editBatchNumber" class="form-label">Batch Number <span class="text-danger">*</span></label>
+                <input type="text" class="form-control font-monospace" id="editBatchNumber" required>
+              </div>
+
+              <!-- Quantity -->
+              <div class="col-12 col-md-4">
+                <label for="editQuantity" class="form-label">Quantity (Units) <span class="text-danger">*</span></label>
+                <input type="number" class="form-control" id="editQuantity" min="0" required>
+              </div>
+
+              <!-- Category -->
+              <div class="col-12 col-md-4">
+                <label for="editCategory" class="form-label">Category</label>
+                <select class="form-select" id="editCategory">
+                  <option value="General">General</option>
+                  <option value="Antibiotic">Antibiotic</option>
+                  <option value="Analgesic / Pain Relief">Analgesic / Pain Relief</option>
+                  <option value="Antipyretic">Antipyretic</option>
+                  <option value="Antihistamine">Antihistamine</option>
+                  <option value="Cardiovascular">Cardiovascular</option>
+                  <option value="Antidiabetic">Antidiabetic</option>
+                  <option value="Gastrointestinal">Gastrointestinal</option>
+                  <option value="Vaccine / Biological">Vaccine / Biological</option>
+                  <option value="Antiseptic">Antiseptic</option>
+                </select>
+              </div>
+
+              <!-- Storage Location -->
+              <div class="col-12 col-md-4">
+                <label for="editLocation" class="form-label">Storage Location</label>
+                <input type="text" class="form-control" id="editLocation">
+              </div>
+
+              <!-- Manufacturing Date -->
+              <div class="col-12 col-md-6">
+                <label for="editMfgDate" class="form-label">Manufacturing Date <span class="text-danger">*</span></label>
+                <input type="date" class="form-control" id="editMfgDate" required>
+              </div>
+
+              <!-- Expiry Date -->
+              <div class="col-12 col-md-6">
+                <label for="editExpDate" class="form-label">Expiry Date <span class="text-danger">*</span></label>
+                <input type="date" class="form-control" id="editExpDate" required>
+              </div>
+
+              <!-- Supplier -->
+              <div class="col-12">
+                <label for="editSupplier" class="form-label">Supplier / Manufacturer</label>
+                <input type="text" class="form-control" id="editSupplier">
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer bg-light">
+            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+            <button type="submit" class="btn btn-primary fw-bold" id="editSubmitBtn">
+              <i class="bi bi-check-circle me-1"></i> Save Changes
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. Medicine Details Modal -->
+  <div class="modal fade" id="detailsModal" tabindex="-1" aria-labelledby="detailsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header border-bottom">
+          <h5 class="modal-title fw-bold" id="detailsModalLabel">
+            <i class="bi bi-info-circle me-1 text-primary"></i> Medicine Details & Security Advisory
+          </h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body p-4" id="detailsModalBody">
+          <!-- Injected via App.openDetailsModal() -->
+        </div>
+        <div class="modal-footer bg-light">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 4. Delete Confirmation Modal -->
+  <div class="modal fade" id="deleteConfirmModal" tabindex="-1" aria-labelledby="deleteConfirmModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-sm">
+      <div class="modal-content text-center p-2">
+        <div class="modal-body p-4">
+          <div class="text-danger mb-3">
+            <i class="bi bi-trash3-fill" style="font-size: 3rem;"></i>
+          </div>
+          <h5 class="fw-bold text-dark mb-2">Delete Medicine?</h5>
+          <p class="text-muted small mb-1">Are you sure you want to remove:</p>
+          <div class="fw-bold text-dark" id="deleteMedicineName">Amoxicillin</div>
+          <div class="batch-pill my-2 d-inline-block" id="deleteBatchNumber">BATCH-001</div>
+          <p class="text-danger small mt-2 mb-0">This record will be permanently deleted from MongoDB.</p>
+        </div>
+        <div class="modal-footer justify-content-center bg-light border-0">
+          <button type="button" class="btn btn-outline-secondary btn-sm px-3" data-bs-dismiss="modal">Cancel</button>
+          <button type="button" class="btn btn-danger btn-sm px-3 fw-bold" id="confirmDeleteBtn">
+            <i class="bi bi-trash3-fill me-1"></i> Delete Record
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 5. Admin Login Modal -->
+  <div class="modal fade" id="loginModal" tabindex="-1" aria-labelledby="loginModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header bg-dark text-white">
+          <div class="d-flex align-items-center gap-2">
+            <div class="brand-icon-wrapper" style="width: 32px; height: 32px;">
+              <i class="bi bi-shield-lock-fill"></i>
+            </div>
+            <h5 class="modal-title fw-bold" id="loginModalLabel">MediGuard Security Sign In</h5>
+          </div>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <form id="loginForm">
+          <div class="modal-body p-4">
+            <div class="alert alert-info py-2 px-3 small d-flex align-items-center justify-content-between mb-3">
+              <div>
+                <strong>Default Demo Credentials:</strong><br>
+                Username: <code>admin</code> | Password: <code>admin123</code>
+              </div>
+              <button type="button" class="btn btn-sm btn-primary fw-semibold" onclick="Auth.fillDemoCredentials()">
+                Auto-fill
+              </button>
+            </div>
+
+            <!-- Error message alert -->
+            <div id="loginErrorMessage" class="alert alert-danger py-2 px-3 small d-none" role="alert"></div>
+
+            <div class="mb-3">
+              <label for="loginUsername" class="form-label">Admin Username</label>
+              <div class="input-group">
+                <span class="input-group-text"><i class="bi bi-person-fill"></i></span>
+                <input type="text" class="form-control" id="loginUsername" placeholder="e.g. admin" required autocomplete="username">
+              </div>
+            </div>
+
+            <div class="mb-3">
+              <label for="loginPassword" class="form-label">Password</label>
+              <div class="input-group">
+                <span class="input-group-text"><i class="bi bi-key-fill"></i></span>
+                <input type="password" class="form-control" id="loginPassword" placeholder="••••••••" required autocomplete="current-password">
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer bg-light justify-content-between">
+            <small class="text-muted"><i class="bi bi-shield-check text-success me-1"></i>Protected by Session Auth</small>
+            <div>
+              <button type="button" class="btn btn-outline-secondary me-2" data-bs-dismiss="modal">Cancel</button>
+              <button type="submit" class="btn btn-primary fw-bold" id="loginSubmitBtn">
+                <i class="bi bi-box-arrow-in-right me-1"></i> Sign In to MediGuard
+              </button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div id="toastContainer" class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 1090;"></div>
+
+  <!-- Bootstrap 5.3 Bundle JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+
+  <!-- Application Scripts -->
+  <script src="/js/auth.js"></script>
+  <script src="/js/app.js"></script>
+</body>
+</html>
